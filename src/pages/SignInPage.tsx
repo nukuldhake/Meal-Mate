@@ -5,20 +5,27 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChefHat, Eye, EyeOff } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const SignInPage = () => {
   const navigate = useNavigate();
+  const { login, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: ""
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Sign in attempt:", formData);
-    // Redirect to dashboard after sign in
-    navigate("/dashboard");
+    try {
+      await login(formData);
+      navigate("/dashboard");
+    } catch (error) {
+      // Error is already handled in the auth context
+      console.error("Login error:", error);
+    }
   };
 
   return (
@@ -95,8 +102,8 @@ const SignInPage = () => {
                 </Link>
               </div>
 
-              <Button type="submit" className="w-full">
-                Sign In
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Signing In..." : "Sign In"}
               </Button>
             </form>
 

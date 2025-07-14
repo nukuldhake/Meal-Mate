@@ -1,30 +1,40 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChefHat, Eye, EyeOff } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const SignUpPage = () => {
+  const navigate = useNavigate();
+  const { register, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
-    name: "",
+    full_name: "",
+    username: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirm_password: ""
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords don't match!");
+    if (formData.password !== formData.confirm_password) {
+      toast.error("Passwords don't match!");
       return;
     }
-    console.log("Sign up attempt:", formData);
-    // Handle sign up logic here
+    try {
+      await register(formData);
+      navigate("/signin");
+    } catch (error) {
+      // Error is already handled in the auth context
+      console.error("Registration error:", error);
+    }
   };
 
   return (
@@ -51,13 +61,25 @@ const SignUpPage = () => {
           <CardContent className="space-y-4">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="full_name">Full Name</Label>
                 <Input
-                  id="name"
+                  id="full_name"
                   type="text"
                   placeholder="Enter your full name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  value={formData.full_name}
+                  onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  placeholder="Choose a username"
+                  value={formData.username}
+                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                   required
                 />
               </div>
@@ -104,8 +126,8 @@ const SignUpPage = () => {
                     id="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirm your password"
-                    value={formData.confirmPassword}
-                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                    value={formData.confirm_password}
+                    onChange={(e) => setFormData({ ...formData, confirm_password: e.target.value })}
                     required
                   />
                   <Button
@@ -139,8 +161,8 @@ const SignUpPage = () => {
                 </Label>
               </div>
 
-              <Button type="submit" className="w-full">
-                Create Account
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Creating Account..." : "Create Account"}
               </Button>
             </form>
 

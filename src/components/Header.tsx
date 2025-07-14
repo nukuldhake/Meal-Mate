@@ -3,19 +3,22 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Search, 
-  Menu, 
-  Bell, 
+import {
+  Search,
+  Menu,
+  Bell,
   User,
   Heart,
   ChefHat,
   Home,
-  Calendar
+  Calendar,
+  LogOut
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
   const location = useLocation();
+  const { user, isAuthenticated, logout } = useAuth();
   const isAuthPage = location.pathname === "/signin" || location.pathname === "/signup";
   const isLandingPage = location.pathname === "/";
 
@@ -103,25 +106,65 @@ const Header = () => {
           <div className="flex items-center space-x-4">
             {isLandingPage ? (
               <div className="flex items-center space-x-3">
-                <Link to="/signin">
-                  <Button variant="ghost" size="sm">
-                    Sign In
-                  </Button>
-                </Link>
-                <Link to="/signup">
-                  <Button size="sm">
-                    Get Started
-                  </Button>
-                </Link>
+                {!isAuthenticated ? (
+                  <>
+                    <Link to="/signin">
+                      <Button variant="ghost" size="sm">
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link to="/signup">
+                      <Button size="sm">
+                        Get Started
+                      </Button>
+                    </Link>
+                  </>
+                ) : (
+                  <Link to="/dashboard">
+                    <Button size="sm">
+                      Dashboard
+                    </Button>
+                  </Link>
+                )}
               </div>
             ) : (
               <>
-                <Button variant="ghost" size="sm" className="hidden md:flex">
-                  <Bell size={16} />
-                </Button>
-                <Button variant="ghost" size="sm">
-                  <User size={16} />
-                </Button>
+                {isAuthenticated ? (
+                  <>
+                    <Button variant="ghost" size="sm" className="hidden md:flex">
+                      <Bell size={16} />
+                    </Button>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-600 hidden md:block">
+                        Welcome, {user?.full_name || user?.username}
+                      </span>
+                      <Button variant="ghost" size="sm">
+                        <User size={16} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={logout}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <LogOut size={16} />
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center space-x-3">
+                    <Link to="/signin">
+                      <Button variant="ghost" size="sm">
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link to="/signup">
+                      <Button size="sm">
+                        Get Started
+                      </Button>
+                    </Link>
+                  </div>
+                )}
               </>
             )}
           </div>
